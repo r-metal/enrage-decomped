@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <radialGradient id="sky" cx="640" cy="300" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5a1208"/>
+      <stop offset="0.35" stop-color="#2a0905"/>
+      <stop offset="1" stop-color="#0a0504"/>
+    </radialGradient>
+    <radialGradient id="moon" cx="0.45" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#ff5a2a"/>
+      <stop offset="0.7" stop-color="#b3200c"/>
+      <stop offset="1" stop-color="#6e1006"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="640" cy="330" r="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff3c14" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff3c14" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="640" cy="320" r="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.85"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6e7c8"/>
+      <stop offset="1" stop-color="#c9a877"/>
+    </linearGradient>
+    <linearGradient id="rage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff7a3c"/>
+      <stop offset="1" stop-color="#e0200e"/>
+    </linearGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0"/>
+    </filter>
+    <filter id="dust" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="3" seed="3"/>
+      <feColorMatrix values="0 0 0 0 0.9  0 0 0 0 0.35  0 0 0 0 0.15  0 0 0 0.22 -0.04"/>
+    </filter>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-10%" y="-30%" width="120%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/><feOffset dy="6" result="o"/><feComponentTransfer in="o" result="s"><feFuncA type="linear" slope="0.8"/></feComponentTransfer><feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- worn ink for the stamp -->
+    <filter id="worn" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="11" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.25" result="m"/>
+      <feComposite in="SourceGraphic" in2="m" operator="in"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#sky)"/>
+  <rect width="1280" height="640" filter="url(#dust)"/>
+  <rect width="1280" height="640" fill="url(#halo)"/>
+
+  <!-- blood moon -->
+  <circle cx="640" cy="330" r="190" fill="url(#moon)" opacity="0.9"/>
+  <circle cx="640" cy="330" r="190" fill="none" stroke="#ff7a4a" stroke-opacity="0.25" stroke-width="3"/>
+
+  <!-- far mesas -->
+  <path fill="#250806" d="M0 470 L90 470 L110 430 L230 428 L250 470 L420 474 L455 452 L520 450 L540 476
+    L760 478 L790 420 L830 412 L900 414 L930 424 L955 478 L1110 476 L1135 440 L1220 438 L1240 474 L1280 474 L1280 640 L0 640 Z"/>
+  <!-- near ridge -->
+  <path fill="#120403" d="M0 520 C120 505 220 530 340 512 C460 495 560 528 680 518 C800 508 900 535 1020 516
+    C1120 500 1200 520 1280 510 L1280 640 L0 640 Z"/>
+
+  <!-- dead hanging tree, right -->
+  <g transform="translate(110 0)" fill="none" stroke="#120403" stroke-linecap="round">
+    <path stroke-width="16" d="M1070 520 C1065 470 1075 420 1062 360"/>
+    <path stroke-width="10" d="M1064 395 C1030 370 990 368 940 350"/>
+    <path stroke-width="8" d="M1066 380 C1100 350 1130 345 1170 330"/>
+    <path stroke-width="6" d="M1062 362 C1055 330 1045 310 1050 285"/>
+    <path stroke-width="4" d="M990 366 C975 350 968 340 960 322"/>
+    <path stroke-width="4" d="M1130 345 C1140 325 1150 318 1158 300"/>
+    <path stroke-width="3" stroke="#160504" d="M960 357 L960 420"/>
+    <ellipse cx="960" cy="430" rx="9" ry="12" stroke-width="3" stroke="#160504"/>
+  </g>
+
+  <!-- lone rider, left -->
+  <g fill="#120403" transform="translate(150 446) scale(1.15)">
+    <path d="M0 40 C4 28 14 24 30 24 L58 22 C66 14 72 10 80 8 L86 0 L88 10 C92 14 92 20 86 22
+      L78 28 L74 40 L70 62 L66 62 L66 44 L58 42 L54 62 L50 62 L50 44 L26 44 L22 62 L18 62 L18 46
+      L12 62 L8 62 L10 46 C4 46 0 44 0 40 Z"/>
+    <path d="M30 26 L34 6 L42 4 L46 24 Z"/>
+    <path d="M30 4 L48 3 L46 0 L44 -6 L36 -6 L34 0 Z"/>
+    <path d="M6 32 C-4 34 -8 44 -6 54 L-2 44 Z"/>
+  </g>
+
+  <!-- title -->
+  <g filter="url(#shadow)" text-anchor="middle">
+    <text x="640" y="318" font-family="Rye" font-size="168" letter-spacing="2" fill="#ff3c14" opacity="0.55" filter="url(#glow)"><tspan fill="none">en</tspan>RAGE</text>
+    <text x="640" y="318" font-family="Rye" font-size="168" letter-spacing="2" stroke="#160403" stroke-width="7" paint-order="stroke" stroke-linejoin="round"><tspan fill="url(#title)">en</tspan><tspan fill="url(#rage)">RAGE</tspan></text>
+    <text x="640" y="382" font-family="Cinzel" font-weight="700" font-size="32" letter-spacing="7" fill="#ead6b0">
+      LIVING WORLD &amp; NEMESIS SYSTEM
+    </text>
+  </g>
+  <g stroke="#c9a877" stroke-width="2" opacity="0.7">
+    <line x1="330" y1="408" x2="570" y2="408"/><line x1="710" y1="408" x2="950" y2="408"/>
+  </g>
+  <path d="M640 398 L650 408 L640 418 L630 408 Z" fill="#c9a877" opacity="0.8"/>
+
+  <!-- DECOMPED stamp -->
+  <g transform="translate(1100 100) rotate(-10) scale(0.86)" filter="url(#worn)" opacity="0.92">
+    <rect x="-165" y="-48" width="330" height="96" rx="8" fill="none" stroke="#ec3a22" stroke-width="7"/>
+    <rect x="-152" y="-36" width="304" height="72" rx="4" fill="none" stroke="#ec3a22" stroke-width="2.5"/>
+    <text x="0" y="22" text-anchor="middle" font-family="Rye" font-size="46" fill="#ec3a22" letter-spacing="2">DECOMPED</text>
+  </g>
+
+  <!-- footer -->
+  <text x="640" y="596" text-anchor="middle" font-family="Oswald" font-weight="500" font-size="24"
+    letter-spacing="6" fill="#c9a877" opacity="0.85">BUILDABLE C# SOURCE  ·  v0.9.5.3  ·  RED DEAD REDEMPTION 2</text>
+
+  <rect width="1280" height="640" fill="url(#vignette)"/>
+  <rect width="1280" height="640" filter="url(#grain)" opacity="0.5"/>
+</svg>

@@ -1,5 +1,7 @@
 # enRAGE - decomped
 
+![enRAGE - decomped](docs/cover.jpg)
+
 > **Unofficial.** This is not the enRAGE author's code release, and it is not affiliated with or
 > supported by them. The official mod is
 > **[enRAGE - Living World and Nemesis System on Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967)**.
@@ -134,6 +136,7 @@ not allowed. Third-party notices are in [THIRD-PARTY.txt](THIRD-PARTY.txt).
 - Game data references from [femga/rdr3_discoveries](https://github.com/femga/rdr3_discoveries)
   and the [RDR3 native database](https://alloc8or.github.io/rdr3-native-db/), as credited by enRAGE.
 - Decompiled with [ILSpy](https://github.com/icsharpcode/ILSpy).
+- Cover art ([docs/cover.svg](docs/cover.svg)) uses the Rye, Cinzel and Oswald fonts (SIL Open Font Licence).
 
 Red Dead Redemption 2 belongs to Rockstar Games / Take-Two Interactive. This is a fan project,
 not affiliated with or endorsed by them.
