@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>NemesisMod</AssemblyName>
+    <RootNamespace>NemesisSystem</RootNamespace>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>12.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+    <!-- src/Properties/AssemblyInfo.cs carries the original assembly attributes -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+    <!-- same bytes wherever the repo is cloned -->
+    <PathMap>$(MSBuildProjectDirectory)=/_/</PathMap>
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <!-- decompiler artefacts: unreachable/unused code, nullable annotations outside a
+         #nullable context, tuple names the target type drops, uncalled local functions -->
+    <NoWarn>$(NoWarn);CS0162;CS0168;CS0169;CS0219;CS0414;CS0649;CS1998;CS8981;CS8632;CS8123;CS8321</NoWarn>
+    <!-- ScriptHookRDR2DotNet loads every DLL in scripts\; the Dist target picks what goes there -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DistDir>$(MSBuildProjectDirectory)/dist/scripts</DistDir>
+  </PropertyGroup>
+
+  <!-- ScriptHookRDRNetAPI.dll (ScriptHookRDR2DotNet V2 2.2.0) is not in the repo. It is taken
+       from lib/ (`make fetch-api` downloads it), or from your game folder with -p:GameDir=... -->
+  <PropertyGroup>
+    <ScriptHookApi Condition="'$(ScriptHookApi)' == '' and Exists('lib/ScriptHookRDRNetAPI.dll')">lib/ScriptHookRDRNetAPI.dll</ScriptHookApi>
+    <ScriptHookApi Condition="'$(ScriptHookApi)' == '' and '$(GameDir)' != '' and Exists('$(GameDir)/ScriptHookRDRNetAPI.dll')">$(GameDir)/ScriptHookRDRNetAPI.dll</ScriptHookApi>
+    <ScriptHookApi Condition="'$(ScriptHookApi)' == '' and '$(GameDir)' != '' and Exists('$(GameDir)/scripts/ScriptHookRDRNetAPI.dll')">$(GameDir)/scripts/ScriptHookRDRNetAPI.dll</ScriptHookApi>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="lib/**;bin/**;obj/**;tools/**;build/**;dist/**;upstream/**" />
+    <EmbeddedResource Include="Resources/doors.json" LogicalName="doors.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- 13.0.3 lib/net45 is byte-identical to the Newtonsoft.Json.dll enRAGE ships -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" GeneratePathProperty="true" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="ScriptHookRDRNetAPI" Condition="'$(ScriptHookApi)' != ''">
+      <HintPath>$(ScriptHookApi)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckScriptHookApi" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(ScriptHookApi)' == ''"
+           Text="ScriptHookRDRNetAPI.dll not found. Run `make fetch-api`, copy it from your game folder into lib/, or build with -p:GameDir=&quot;path to Red Dead Redemption 2&quot;." />
+  </Target>
+
+  <!-- dist/scripts/ = what goes into <game>\scripts\ -->
+  <Target Name="Dist" AfterTargets="Build">
+    <ItemGroup>
+      <DistFile Include="$(TargetPath);$(TargetDir)$(TargetName).pdb;$(PkgNewtonsoft_Json)/lib/net45/Newtonsoft.Json.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DistFile)" DestinationFolder="$(DistDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- dotnet build -c Release -t:Deploy -p:GameDir="C:\...\Red Dead Redemption 2" -->
+  <Target Name="Deploy" DependsOnTargets="Build;Dist">
+    <Error Condition="'$(GameDir)' == '' or !Exists('$(GameDir)')" Text="Set GameDir to the folder that holds RDR2.exe." />
+    <ItemGroup>
+      <DeployFile Include="$(DistDir)/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DeployFile)" DestinationFolder="$(GameDir)/scripts" />
+    <Message Importance="high" Text="Copied @(DeployFile->'%(Filename)%(Extension)', ', ') to $(GameDir)/scripts" />
+  </Target>
+</Project>

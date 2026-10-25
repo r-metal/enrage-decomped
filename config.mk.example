@@ -1,0 +1,13 @@
+# Copy to config.mk (not tracked) and adjust. Building needs none of this; deploy,
+# logs and the upstream targets do. Spaces in paths are fine; don't add quotes.
+
+# The game folder (the one with RDR2.exe). Steam on Linux:
+GAME_DIR = $(HOME)/.local/share/Steam/steamapps/common/Red Dead Redemption 2
+# Windows from WSL / Git Bash:  GAME_DIR = /mnt/c/Program Files (x86)/Steam/steamapps/common/Red Dead Redemption 2
+
+# enRAGE's data folder (Documents\Rockstar Games\Red Dead Redemption 2\enRAGE). Under Proton:
+DATA_DIR = $(HOME)/.local/share/Steam/steamapps/compatdata/1174180/pfx/drive_c/users/steamuser/Documents/Rockstar Games/Red Dead Redemption 2/enRAGE
+
+# Folder holding the official enRAGE NemesisMod.dll from Nexus (verify, diff-upstream,
+# decompile, deploy-original). Default: upstream/ in this repo.
+UPSTREAM_DIR = upstream

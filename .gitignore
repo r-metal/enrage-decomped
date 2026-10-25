@@ -1,0 +1,17 @@
+# build output
+bin/
+obj/
+build/
+dist/
+# downloaded / user-supplied binaries: nothing from the game or the mod is tracked
+lib/
+upstream/
+*.dll
+*.pdb
+*.rar
+*.zip
+# local machine
+config.mk
+NEXT_UP.md
+*.user
+.vs/
