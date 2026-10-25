@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-10-25
+Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 
 ## Status
 
@@ -16,6 +16,19 @@ Last updated: 2026-10-25
 - [x] Docs: README, `docs/ARCHITECTURE.md`, `docs/RECONSTRUCTION.md`
 - [x] In-game smoke test of the rebuilt DLL: 5 min on an existing Story save. Startup matched the official DLL stage by stage, with `SELFCHECK ok` and `errors 0`. The F11 menu, a fight, greetings, a save point and a town arrival all worked, the save files kept their schema, and the game quit cleanly (`docs/RECONSTRUCTION.md`)
 
+**0.9.5.3-decomped.1: companions and recruits** (design: `docs/decisions/D-001-companions-and-recruits.md`)
+- [ ] Test harness and `make ci` barrier: unit tests, static-init check, publishing invariants (T-000)
+- [ ] Version string `0.9.5.3-decomped.1`; assembly version stays `0.9.5.3` (T-001)
+- [ ] Camp companions back on: the lost per-tick dispatcher is rewritten, with an `[Companions] Enabled` switch (T-010)
+- [ ] `[Recruits]` settings: `Enabled`, `MaxKept`, `ChancePercent` (T-012)
+- [ ] `RecruitRules.OfferChance`: pure and unit-tested (T-020)
+- [ ] `WorldState.Recruits` saved in `world.json`; old saves still load (T-021)
+- [ ] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023)
+- [ ] F11 "Your Men" page (T-024)
+- [ ] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030)
+- [ ] **In-game acceptance test: the maintainer plays the checklist while the logs are read. Blocked: the maintainer is away from the game.**
+- [ ] **Push `master` + `upstream`, tag `v0.9.5.3-decomped.1`. Waits on the in-game test.**
+
 **Ideas, not scheduled.** Each is a pure refactor you can check with `make verify`:
 - split `RosterMenu.cs` (4.8k lines) the same way;
 - put `const` names back where the compiler inlined their values (`180000` -> `BandWatchMs`);
@@ -23,6 +36,9 @@ Last updated: 2026-10-25
 - rename ILSpy's locals (`num4`, `text2`) in the files you work in.
 
 ## Decisions and deviations
+
+- D-001 (2026-10-25): companions and recruits design, version scheme. `docs/decisions/D-001-companions-and-recruits.md`.
+- `make verify` passes only on the untouched reconstruction. From 0.9.5.3-decomped.1 on, it is expected to fail. `make ci` is the gate, and `make diff-upstream` shows what changed.
 
 - File names are chosen, not recovered. Topics and order come from the DLL (docs/RECONSTRUCTION.md).
 - Static field initializers moved from ILSpy's synthesized static constructor back onto the fields. The 13 fields that read another during init stay in one file with their source.

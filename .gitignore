@@ -15,3 +15,6 @@ config.mk
 NEXT_UP.md
 *.user
 .vs/
+# orchestration (local)
+SWARM_TASKS.md
+.private-patterns

@@ -95,14 +95,14 @@ from `scripts\`. Delete `Newtonsoft.Json.dll` too, unless another mod uses it.
 - `make deploy-original`.
 
 **When enRAGE updates.** Keep the plain decompile on the `upstream` branch and your changes on
-`main`:
+`master`:
 
 ```sh
 git switch upstream
 make decompile UPSTREAM_DIR=/path/to/new/scripts      # -> build/upstream-src
 rm -rf src Resources && cp -r build/upstream-src/src build/upstream-src/Resources .
 git add -A && git commit -m "upstream 0.9.x"
-git switch main && git rebase upstream
+git switch master && git rebase upstream
 ```
 
 New files and boundaries are explained in [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md).
