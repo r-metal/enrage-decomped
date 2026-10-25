@@ -46,6 +46,8 @@ public partial class NemesisMod
 
 		public bool LeftCamp;
 
+		public bool NoCamp;
+
 		public int FollowAt;
 
 		public int MountAt;
@@ -897,6 +899,10 @@ public partial class NemesisMod
 
 	private bool SpawnCompanion(Companion c, Ped player)
 	{
+		if (IsRecruit(c))
+		{
+			return SpawnRecruit(c, player);
+		}
 		Vector3 vector = OutOfSightSpot(player, 35f, 60f, ahead: false, allowSeen: true);
 		if (vector == Vector3.Zero)
 		{
@@ -961,12 +967,12 @@ public partial class NemesisMod
 			return;
 		}
 		float num = player.Position.DistanceTo(c.Camp);
-		if (!c.LeftCamp && num > 130f)
+		if (!c.NoCamp && !c.LeftCamp && num > 130f)
 		{
 			c.LeftCamp = true;
 			GrudgeLog("COMPANION " + c.Name + " left camp with you");
 		}
-		if (c.LeftCamp && num < 90f)
+		if (!c.NoCamp && c.LeftCamp && num < 90f)
 		{
 			SendHome(c, "back at camp");
 			return;
@@ -992,7 +998,7 @@ public partial class NemesisMod
 				c.Blip.Delete();
 			}
 			GrudgeLog("COMPANION " + c.Name + " was hurt - laid up for a day");
-			Feed("COMPANION " + c.Name + " was hurt and rode back to camp", Theme.Warn);
+			Feed("COMPANION " + c.Name + (c.NoCamp ? " was hurt and rode off to heal" : " was hurt and rode back to camp"), Theme.Warn);
 			Chronicle_Ride(c, hurt: true);
 			return;
 		}
@@ -1206,7 +1212,8 @@ public partial class NemesisMod
 		}
 		if (!quiet && c.Ped != null && c.Ped.Exists())
 		{
-			ShowSubtitle(c.Name.Split(' ')[0] + ": \"" + HomeLines[_rng.Next(HomeLines.Length)] + "\"");
+			string[] array = (c.NoCamp ? RecruitHomeLines : HomeLines);
+			ShowSubtitle(c.Name.Split(' ')[0] + ": \"" + array[_rng.Next(array.Length)] + "\"");
 		}
 		GrudgeLog("COMPANION " + c.Name + " goes home (" + why + ")");
 		Chronicle_Ride(c, hurt: false);
@@ -1369,19 +1376,24 @@ public partial class NemesisMod
 
 	private void Chronicle_Ride(Companion c, bool hurt)
 	{
-		if (c.Since > 0 && c.LeftCamp)
+		if (c.Since > 0 && (c.LeftCamp || c.NoCamp))
 		{
 			long num = Math.Max(1L, GameMinutesNow() - c.Since);
-			AddRegard(c.Key, hurt ? (-1) : Math.Min(8, 3 + (int)(num / 60)), hurt ? "got hurt riding with you" : ("rode out with you (" + ((num >= 120) ? (num / 60 + " h") : (num + " min")) + ")"));
+			bool flag = IsRecruit(c);
+			if (!flag)
+			{
+				AddRegard(c.Key, hurt ? (-1) : Math.Min(8, 3 + (int)(num / 60)), hurt ? "got hurt riding with you" : ("rode out with you (" + ((num >= 120) ? (num / 60 + " h") : (num + " min")) + ")"));
+			}
 			string text = ((num >= 120) ? $"{num / 60} hours" : $"{num} minutes");
 			List<string> list = (from o in _comps
 				where o != c && o.State == 1
 				select o.Name).ToList();
 			Vector3 position = Game.Player.Character.Position;
-			ChronicleDeed("ride", "You rode out with " + c.Name + ((list.Count > 0) ? (" and " + string.Join(", ", list)) : ""), "near " + GetZoneName(position), position, "vdl", new WorldPart
+			ChronicleDeed("ride", "You rode out with " + c.Name + ((list.Count > 0) ? (" and " + string.Join(", ", list)) : ""), "near " + GetZoneName(position), position, flag ? null : "vdl", new WorldPart
 			{
+				Id = (flag ? c.Rec?.Id : null),
 				Name = c.Name,
-				Gang = "vdl",
+				Gang = (flag ? null : "vdl"),
 				Outcome = (hurt ? "WOUNDED" : "UNHURT"),
 				Note = (hurt ? ("hurt after " + text + " - laid up a day") : (text + " on the road"))
 			});
@@ -1399,5 +1411,6 @@ public partial class NemesisMod
 		_stillSince = -1;
 		_comps.Clear();
 		HideAskPrompt();
+		WipeRecruitOffers();
 	}
 }

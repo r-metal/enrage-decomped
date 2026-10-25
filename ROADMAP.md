@@ -23,8 +23,8 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 - [x] `[Recruits]` settings: `Enabled`, `MaxKept`, `ChancePercent` (T-012). `GATE OK: T-012`, 6 tests including clamps and section layout.
 - [x] `RecruitRules.OfferChance`: pure and unit-tested (T-020). `GATE OK: T-020`, 25 cases.
 - [x] `WorldState.Recruits` saved in `world.json`; old saves still load (T-021). `GATE OK: T-021`, 6 tests through the mod's real `SafeFile`/`SlicedJson` paths; an old reader ignores the new key.
-- [ ] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023)
-- [ ] F11 "Your Men" page (T-024)
+- [x] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023). `GATE OK: T-023`, 52 tests. The wave review found the MaxKept cap could be overshot by two open offers; fixed with a re-check at take-on, independently verified. Not yet run in game.
+- [x] F11 "Your Men" page (T-024). It is a chip on the Hierarchy faction bar after "Unaffiliated", reached with Q/E like the other chips, not a header tab (see Decisions). `GATE OK: T-024`. The wave review found the Let Him Go confirm survived leaving the page; fixed and verified. Not yet seen in game.
 - [ ] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030)
 - [ ] **In-game acceptance test, on a cloned save slot with the enRAGE data folder snapshotted and restored afterwards (never the real save): the maintainer plays the checklist while the logs are read. Blocked: the maintainer is away from the game.**
 - [ ] **Push `master` + `upstream`, tag `v0.9.5.3-decomped.1`. Waits on the in-game test.**
@@ -38,6 +38,8 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 ## Decisions and deviations
 
 - D-001 (2026-10-25): companions and recruits design, version scheme. `docs/decisions/D-001-companions-and-recruits.md`.
+- "Your Men" (T-024) sits on the Hierarchy faction bar (Q/E, like Unaffiliated) rather than as a header tab. A header tab would mean changing the Tab-key cycle, which the task forbade, and touching `MenuTab.cs`/`NemesisMod.Input.cs`. Revisit if the in-game test finds it hard to discover.
+- Recruit offers stop a fleeing man: he faces you and says an offer line for the 60 s window (T-023), because a running man can rarely be reached within 3 m. If the offer lapses, he runs as before.
 - `make verify` passes only on the untouched reconstruction. From 0.9.5.3-decomped.1 on, it is expected to fail. `make ci` is the gate, and `make diff-upstream` shows what changed.
 
 - File names are chosen, not recovered. Topics and order come from the DLL (docs/RECONSTRUCTION.md).

@@ -1458,6 +1458,10 @@ public partial class NemesisMod : Script
 			{
 				UpdateCompanion(player);
 			});
+			Guard("recruits", delegate
+			{
+				UpdateRecruits(player);
+			});
 			if (WorldClockSettled)
 			{
 				Guard("story", delegate

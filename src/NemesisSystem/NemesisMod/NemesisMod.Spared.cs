@@ -155,6 +155,7 @@ public partial class NemesisMod
 			GrudgeLog("HOLDINGS keeper left failed: " + ex.Message);
 		}
 		NoteMercy(Gangs.Of(r), r.Name, r.Id);
+		OfferRecruit(r, how);
 		string why;
 		int num = SpareLeaveChance(r, out why);
 		if (num <= 0)

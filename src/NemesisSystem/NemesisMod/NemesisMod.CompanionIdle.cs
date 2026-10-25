@@ -725,6 +725,10 @@ public partial class NemesisMod
 
 	private void NoteRegardTalk(Companion c)
 	{
+		if (IsRecruit(c))
+		{
+			return;
+		}
 		try
 		{
 			AddRegard(c.Key, 1, "a quiet word while you rested");

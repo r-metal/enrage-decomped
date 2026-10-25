@@ -109,6 +109,7 @@ public partial class NemesisMod
 		DropLockPrompt(why);
 		DropSocialPrompt();
 		HideAskPrompt();
+		HideRecruitPrompt();
 		HideTelegraphPrompt();
 		HidePrompts();
 	}

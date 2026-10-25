@@ -231,6 +231,12 @@ internal sealed class RosterMenu
 
 	private int _warEvCount;
 
+	private int _menIndex;
+
+	private int _menAction;
+
+	private bool _confirmLetGo;
+
 	private Gang Faction
 	{
 		get
@@ -247,7 +253,9 @@ internal sealed class RosterMenu
 		}
 	}
 
-	private static int FactionCount => Gangs.All.Length + 2;
+	private static int FactionCount => Gangs.All.Length + 3;
+
+	private bool MenPage => _faction == Gangs.All.Length + 2;
 
 	public bool IsOpen { get; private set; }
 
@@ -697,8 +705,8 @@ internal sealed class RosterMenu
 
 	private void DrawFactionBar(string status)
 	{
-		List<string> names = Gangs.All.Select((Gang g) => g.Name).Concat(new string[2] { "Van der Linde", "Unaffiliated" }).ToList();
-		Theme.FactionBar(0.13499999f, names, _faction, Faction != null, AccentOf(Faction), status, null, chipAsText: false, PickFaction);
+		List<string> names = Gangs.All.Select((Gang g) => g.Name).Concat(new string[3] { "Van der Linde", "Unaffiliated", "Your Men" }).ToList();
+		Theme.FactionBar(0.13499999f, names, _faction, Faction != null, MenPage ? Theme.Good : AccentOf(Faction), status, null, chipAsText: false, PickFaction);
 		float num = 0.17499998f;
 		Gang faction = Faction;
 		if (faction != null && faction.StoryOnly)
@@ -727,6 +735,12 @@ internal sealed class RosterMenu
 				("A FOOTHOLD IN", item3, Theme.Dim)
 			}, _mod.IsDestroyed(faction) ? "Finished - no ground left" : "No ground of their own");
 		}
+		else if (MenPage)
+		{
+			Theme.NoteBand(num, "Men you spared who chose your side. Three ride with you at most, camp riders included.");
+			Theme.StrengthRow(num + 0.032f, -1, null, null);
+			Theme.GroundRow(num + 0.032f + 0.028f, null);
+		}
 		else
 		{
 			Theme.NoteBand(num, "No notoriety here - each of these men holds his own grudge.");
@@ -744,6 +758,7 @@ internal sealed class RosterMenu
 			_row = -1;
 			_col = 0;
 			_scrollY = 0f;
+			_confirmLetGo = false;
 			Array.Clear(_offsets, 0, _offsets.Length);
 		}
 	}
@@ -765,6 +780,7 @@ internal sealed class RosterMenu
 		_detail = null;
 		_worldPerson = -1;
 		_confirmForget = false;
+		_confirmLetGo = false;
 	}
 
 	public bool ShowArthur()
@@ -779,6 +795,7 @@ internal sealed class RosterMenu
 		_resetOpen = false;
 		_worldPerson = -1;
 		_confirmForget = false;
+		_confirmLetGo = false;
 		_faction = Gangs.All.Length;
 		_detail = nemesisRecord;
 		_action = 0;
@@ -793,6 +810,7 @@ internal sealed class RosterMenu
 		_detail = null;
 		_worldPerson = -1;
 		_confirmForget = false;
+		_confirmLetGo = false;
 		_resetOpen = false;
 	}
 
@@ -804,6 +822,7 @@ internal sealed class RosterMenu
 			_resetOpen = false;
 			_worldPerson = -1;
 			_confirmForget = false;
+			_confirmLetGo = false;
 			int num = Array.FindIndex(Gangs.All, (Gang g) => g.Id == r.Gang);
 			_faction = ((num >= 0) ? num : ((r.Story || r.Gang == Gangs.VanDerLinde.Id) ? Gangs.All.Length : (Gangs.All.Length + 1)));
 			_detail = r;
@@ -863,6 +882,7 @@ internal sealed class RosterMenu
 		_worldPerson = -1;
 		_row = -1;
 		_confirmForget = false;
+		_confirmLetGo = false;
 		Array.Clear(_offsets, 0, _offsets.Length);
 	}
 
@@ -1155,6 +1175,10 @@ internal sealed class RosterMenu
 		{
 			return HandleWorldKey(key);
 		}
+		if (MenPage)
+		{
+			return HandleMenKey(key);
+		}
 		if (Faction == null)
 		{
 			return HandleListKey(key);
@@ -1187,6 +1211,7 @@ internal sealed class RosterMenu
 				_detail = list[_row].Items[_col];
 				_action = 0;
 				_confirmForget = false;
+				_confirmLetGo = false;
 				_historyScroll = 0;
 				_crimeScroll = 0;
 			}
@@ -1363,6 +1388,7 @@ internal sealed class RosterMenu
 				_detail = list[_listIndex].Rec;
 				_action = 0;
 				_confirmForget = false;
+				_confirmLetGo = false;
 				_historyScroll = 0;
 				_crimeScroll = 0;
 			}
@@ -1374,6 +1400,7 @@ internal sealed class RosterMenu
 					_detail = nemesisRecord;
 					_action = 0;
 					_confirmForget = false;
+					_confirmLetGo = false;
 					_historyScroll = 0;
 					_crimeScroll = 0;
 				}
@@ -1423,6 +1450,111 @@ internal sealed class RosterMenu
 			return false;
 		}
 		return true;
+	}
+
+	private bool HandleMenKey(Keys key)
+	{
+		IReadOnlyList<NemesisRecord> list = _mod.RecruitsKept();
+		int num = Math.Max(0, list.Count - 1);
+		_menIndex = Math.Max(0, Math.Min(_menIndex, num));
+		switch (key)
+		{
+		case Keys.Up:
+			_menIndex = Math.Max(0, _menIndex - 1);
+			_confirmLetGo = false;
+			break;
+		case Keys.Down:
+			_menIndex = Math.Min(num, _menIndex + 1);
+			_confirmLetGo = false;
+			break;
+		case Keys.Left:
+			_menAction = (_menAction + 2) % 3;
+			_confirmLetGo = false;
+			break;
+		case Keys.Right:
+			_menAction = (_menAction + 1) % 3;
+			_confirmLetGo = false;
+			break;
+		case Keys.Return:
+			if (list.Count > 0)
+			{
+				ActivateMan(list[_menIndex]);
+			}
+			break;
+		case Keys.R:
+			if (_mod.DebugOn)
+			{
+				_mod.SetRandomAmbushes(!_mod.Config.RandomAmbushes);
+			}
+			else
+			{
+				_mod.OpenGuide();
+			}
+			break;
+		case Keys.G:
+			_mod.OpenGuide();
+			break;
+		case Keys.O:
+			_mod.OpenSetupScreen();
+			break;
+		case Keys.N:
+			_mod.CycleMessages();
+			break;
+		case Keys.C:
+			_mod.CycleNameCards();
+			break;
+		case Keys.E:
+		case Keys.Q:
+			_faction = (_faction + ((key == Keys.E) ? 1 : (FactionCount - 1))) % FactionCount;
+			_row = -1;
+			_col = 0;
+			_confirmLetGo = false;
+			Array.Clear(_offsets, 0, _offsets.Length);
+			return true;
+		case Keys.Back:
+			Toggle();
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
+
+	private static List<string> MenActions(NemesisRecord rec)
+	{
+		bool flag = Models.Female(rec.ModelHash);
+		return new List<string>
+		{
+			flag ? "Send For Her" : "Send For Him",
+			"Send Home",
+			flag ? "Let Her Go" : "Let Him Go"
+		};
+	}
+
+	private void ActivateMan(NemesisRecord rec)
+	{
+		_menAction = Math.Max(0, Math.Min(_menAction, 2));
+		switch (MenActions(rec)[_menAction])
+		{
+		case "Send For Him":
+		case "Send For Her":
+			_mod.SendForRecruit(rec);
+			Toggle();
+			break;
+		case "Send Home":
+			_mod.SendRecruitHome(rec);
+			break;
+		case "Let Him Go":
+		case "Let Her Go":
+			if (!_confirmLetGo)
+			{
+				_confirmLetGo = true;
+				break;
+			}
+			_mod.LetRecruitGo(rec);
+			_confirmLetGo = false;
+			break;
+		}
 	}
 
 	private void DrawUnaffiliatedList()
@@ -1609,6 +1741,102 @@ internal sealed class RosterMenu
 			UiDraw.Text(FitText((rec2 != null) ? Pron.Her(rec2.GrudgeSummary, Models.Female(rec2.ModelHash)) : PersonLine(list[_listIndex].Acq), 0.28f, 0.92f - num21, name: false), num21, num20 - 0.010500001f, 0.28f, 200, 196, 186);
 		}
 		Theme.ScrollBar(0.919f, top, (float)num12 * _rowH, _listScroll, num12, list.Count);
+	}
+
+	private void DrawMenList()
+	{
+		IReadOnlyList<NemesisRecord> list = _mod.RecruitsKept();
+		_menIndex = Math.Max(0, Math.Min(_menIndex, list.Count - 1));
+		int num = list.Count((NemesisRecord r) => _mod.RecruitStatus(r) == "Riding");
+		DrawHeader("YOUR MEN", (list.Count == 0) ? "Men you spared who chose your side" : $"{list.Count} kept  -  {num} riding with you", Theme.Good);
+		DrawFactionBar(null);
+		float num2 = 0.868f;
+		Theme.PanelRect(0.07f, 0.26099998f, 0.86f, num2 - 0.26099998f);
+		DrawFooter(num2, UsingPad ? ("D-pad  Navigate     A  Select     Start  Settings" + (_mod.DebugOn ? "" : "     Y  Guide") + "     B  Close") : "Arrows  Navigate     Enter  Select     O  Settings     G  Guide     Backspace  Close");
+		float num3 = 0.089999996f;
+		float num4 = 0.37f;
+		float num5 = 0.64f;
+		var (r2, g, b) = LabelColor;
+		UiDraw.TextFont("NAME", UiDraw.TitleFont, num3, 0.291f, 0.22f, r2, g, b);
+		UiDraw.TextFont("GANG", UiDraw.TitleFont, num4, 0.291f, 0.22f, r2, g, b);
+		UiDraw.TextFont("STATUS", UiDraw.TitleFont, num5, 0.291f, 0.22f, r2, g, b);
+		Theme.Divider(0.08f, 0.315f, 0.84000003f);
+		if (list.Count == 0)
+		{
+			UiDraw.Text("No one rides for you yet. Spare a man - some will offer.", num3, 0.331f, 0.26f, Theme.Dim.r, Theme.Dim.g, Theme.Dim.b);
+			return;
+		}
+		float num6 = 0.321f;
+		int num7 = Math.Max(0, _menIndex - 14);
+		for (int i = num7; i < Math.Min(list.Count, num7 + 15); i++)
+		{
+			NemesisRecord nemesisRecord = list[i];
+			bool flag = i == _menIndex;
+			int mi = i;
+			UiMouse.Region(0.08f, num6, 0.84000003f, 0.029f, null, delegate
+			{
+				if (_menIndex != mi)
+				{
+					_menIndex = mi;
+					_confirmLetGo = false;
+				}
+			});
+			if (flag)
+			{
+				Theme.SelectBox(0.08f, num6, 0.84000003f, 0.029f);
+			}
+			else if (i % 2 == 1)
+			{
+				UiDraw.Rect(0.08f, num6, 0.84000003f, 0.029f, 255, 255, 255, 8);
+			}
+			int num8 = (flag ? 250 : 228);
+			float y = num6 + 0.0145f - 0.27f * 0.0375f;
+			float y2 = num6 + 0.0145f - 0.25f * 0.0375f;
+			Gang gang = Gangs.ById(nemesisRecord.Gang);
+			string text = _mod.RecruitStatus(nemesisRecord);
+			(int r, int g, int b) tuple = ((text == "Riding") ? Theme.Good : (text.StartsWith("Laid up") ? Theme.Warn : Theme.Dim));
+			UiDraw.Text(FitText(nemesisRecord.FullName ?? "", 0.27f, num4 - num3 - 0.008f, name: false), num3, y, 0.27f, num8, num8, num8);
+			UiDraw.Text(FitText((gang != null) ? ("formerly of the " + Short(gang)) : "rode alone", 0.25f, num5 - num4 - 0.008f, name: false), num4, y2, 0.25f, num8 - 20, num8 - 24, num8 - 32);
+			UiDraw.Text(text, num5, y2, 0.25f, tuple.r, tuple.g, tuple.b);
+			num6 += 0.032f;
+		}
+		Theme.ScrollBar(0.919f, 0.321f, 0.48f, num7, 15, list.Count);
+		List<string> list2 = MenActions(list[_menIndex]);
+		_menAction = Math.Max(0, Math.Min(_menAction, list2.Count - 1));
+		Theme.HRule(0.08f, 0.82199997f, 0.84000003f, Theme.Faint.r, Theme.Faint.g, Theme.Faint.b, 200);
+		float num9 = 0.09f;
+		float num10 = 0.827f;
+		for (int j = 0; j < list2.Count; j++)
+		{
+			string text2 = ((list2[j].StartsWith("Let ") && _confirmLetGo) ? "Confirm Let Go" : list2[j]);
+			bool flag2 = j == _menAction;
+			int ai = j;
+			UiMouse.Region(num9, num10, 0.115f, 0.036f, delegate
+			{
+				if (_menAction == ai)
+				{
+					return false;
+				}
+				_menAction = ai;
+				_confirmLetGo = false;
+				return true;
+			}, delegate
+			{
+				UiMouse.Send(Keys.Return);
+			});
+			if (flag2)
+			{
+				Theme.SelectBox(num9, num10, 0.115f, 0.036f);
+			}
+			else
+			{
+				UiDraw.Rect(num9, num10, 0.115f, 0.036f, Theme.Card.r, Theme.Card.g, Theme.Card.b, 230);
+				Theme.Hairline(num9, num10, 0.115f, 0.036f, Theme.Border.r, Theme.Border.g, Theme.Border.b, 230);
+			}
+			int num11 = (flag2 ? 245 : 200);
+			UiDraw.TextFont(text2, UiDraw.TitleFont, num9 + 0.01f, num10 + 0.008f, 0.26f, num11, num11, num11);
+			num9 += 0.127f;
+		}
 	}
 
 	private static string SeenText(long gameMin, DateTime real, long nowMin)
@@ -1880,11 +2108,13 @@ internal sealed class RosterMenu
 		case Keys.Up:
 			_action = (_action - 1 + count) % count;
 			_confirmForget = false;
+			_confirmLetGo = false;
 			return true;
 		case Keys.Right:
 		case Keys.Down:
 			_action = (_action + 1) % count;
 			_confirmForget = false;
+			_confirmLetGo = false;
 			return true;
 		case Keys.Return:
 			ActivateDetail();
@@ -1892,6 +2122,7 @@ internal sealed class RosterMenu
 		case Keys.Back:
 			_detail = null;
 			_confirmForget = false;
+			_confirmLetGo = false;
 			return true;
 		case Keys.E:
 		case Keys.Q:
@@ -1969,6 +2200,7 @@ internal sealed class RosterMenu
 		_detail = next;
 		_action = 0;
 		_confirmForget = false;
+		_confirmLetGo = false;
 		_historyScroll = 0;
 		_crimeScroll = 0;
 		if (_worldPage)
@@ -2029,6 +2261,7 @@ internal sealed class RosterMenu
 			_mod.Forget(_detail);
 			_detail = null;
 			_confirmForget = false;
+			_confirmLetGo = false;
 			break;
 		default:
 			_detail = null;
@@ -2095,6 +2328,11 @@ internal sealed class RosterMenu
 
 	private void DrawHierarchy()
 	{
+		if (MenPage)
+		{
+			DrawMenList();
+			return;
+		}
 		if (Faction == null)
 		{
 			DrawUnaffiliatedList();
@@ -2640,6 +2878,7 @@ internal sealed class RosterMenu
 				}
 				_action = ai;
 				_confirmForget = false;
+				_confirmLetGo = false;
 				return true;
 			}, delegate
 			{
@@ -3571,6 +3810,7 @@ internal sealed class RosterMenu
 				_detail = list2[_worldPerson];
 				_action = 0;
 				_confirmForget = false;
+				_confirmLetGo = false;
 				_historyScroll = 0;
 				_crimeScroll = 0;
 			}
