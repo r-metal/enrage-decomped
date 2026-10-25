@@ -105,6 +105,12 @@ internal sealed class NemesisSettings
 
 	public bool CompanionsEnabled = true;
 
+	public bool RecruitsEnabled = true;
+
+	public int RecruitsMaxKept = 6;
+
+	public int RecruitsChancePercent = 100;
+
 	public int WorldCatchUpMax = 24;
 
 	public bool WorldEvents = true;
@@ -1276,6 +1282,23 @@ internal sealed class NemesisSettings
 		{
 			CompanionsEnabled = v;
 		}, () => $"{CompanionsEnabled}");
+		yield return Setting.Line("");
+		yield return Setting.Line("[Recruits]");
+		yield return Setting.Line("; A man you spare (gives up, let go after questioning, loses his nerve) may offer to ride with you for good. False = none do.");
+		yield return Setting.Key("Recruits", "Enabled", () => RecruitsEnabled, delegate(bool v)
+		{
+			RecruitsEnabled = v;
+		}, () => $"{RecruitsEnabled}");
+		yield return Setting.Line("; Most men you keep at once (0-12). At the cap no one offers. The ones riding with you count against Ride With Me's 3.");
+		yield return Setting.Key("Recruits", "MaxKept", () => RecruitsMaxKept, delegate(int v)
+		{
+			RecruitsMaxKept = Math.Max(0, Math.Min(12, v));
+		}, () => $"{RecruitsMaxKept}");
+		yield return Setting.Line("; % of the usual offer chance (0-300; 100 = as is). It never goes past 75%.");
+		yield return Setting.Key("Recruits", "ChancePercent", () => RecruitsChancePercent, delegate(int v)
+		{
+			RecruitsChancePercent = Math.Max(0, Math.Min(300, v));
+		}, () => $"{RecruitsChancePercent}");
 		yield return Setting.Line("");
 		yield return Setting.Line("[People]");
 		yield return Setting.Line("; Everyone you dealt with (greeted, antagonized, robbed, hit...) is remembered in people.json - name, face, town, temper,");

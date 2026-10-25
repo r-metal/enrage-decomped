@@ -205,4 +205,6 @@ internal class WorldState
 	public Dictionary<string, float> MaskedNotoriety { get; set; }
 
 	public Dictionary<string, int> YourCrimes { get; set; } = new Dictionary<string, int>();
+
+	public List<NemesisRecord> Recruits { get; set; }
 }

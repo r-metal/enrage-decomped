@@ -18,11 +18,11 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 
 **0.9.5.3-decomped.1: companions and recruits** (design: `docs/decisions/D-001-companions-and-recruits.md`)
 - [x] Test harness and `make ci` barrier: unit tests, static-init check, publishing invariants (T-000). xunit on net10 against the built net48 DLL; a WinForms `Keys` shim lets settings types load off Windows. Gate `GATE OK: T-000`, and an adversarial verifier planted an identity hit, binaries, a non-UTC commit, a failing test and a zero-test filter: all fired.
-- [ ] Version string `0.9.5.3-decomped.1`; assembly version stays `0.9.5.3` (T-001)
+- [x] Version string `0.9.5.3-decomped.1`; assembly version stays `0.9.5.3` (T-001). `GATE OK: T-001`, 3 tests.
 - [x] Camp companions back on: the lost per-tick dispatcher is rewritten, with an `[Companions] Enabled` switch (T-010). Gate `GATE OK: T-010`; barrier `ci: OK` (4 tests). Not yet run in game.
-- [ ] `[Recruits]` settings: `Enabled`, `MaxKept`, `ChancePercent` (T-012)
-- [ ] `RecruitRules.OfferChance`: pure and unit-tested (T-020)
-- [ ] `WorldState.Recruits` saved in `world.json`; old saves still load (T-021)
+- [x] `[Recruits]` settings: `Enabled`, `MaxKept`, `ChancePercent` (T-012). `GATE OK: T-012`, 6 tests including clamps and section layout.
+- [x] `RecruitRules.OfferChance`: pure and unit-tested (T-020). `GATE OK: T-020`, 25 cases.
+- [x] `WorldState.Recruits` saved in `world.json`; old saves still load (T-021). `GATE OK: T-021`, 6 tests through the mod's real `SafeFile`/`SlicedJson` paths; an old reader ignores the new key.
 - [ ] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023)
 - [ ] F11 "Your Men" page (T-024)
 - [ ] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030)
