@@ -57,23 +57,23 @@ internal sealed class WelcomeGuide
 
 	private static readonly Page WhatsNewPage = new Page
 	{
-		Title = "What's new in 0.9.5.3",
-		Kicker = "A patch",
+		Title = "What's new in 0.9.5.3-decomped.1",
+		Kicker = "Unofficial: men who ride with you",
 		Left = new(string, string)[5]
 		{
-			("Lore leaders", "Turn off Lock lore leaders (Settings, Your story) and Colm, Bronte, Wofford and the rest hold their hideouts out in the world."),
-			("Guns drawn", "Hold a gun on a man and the armed men with him draw and cover you. They won't fire first, but hurt one of them and it's a fight."),
-			("Outlaws are outlaws", "Fight one of the mod's outlaws and he's one of the game's own gang: no crime, no witness. A man who swings first answers to the lawman."),
-			("Who talks", "A man who isn't scared of you won't talk. He stands his ground at gunpoint and won't take your money. Scare him and he talks as before."),
-			("Telegrams", "They read like real ones: a Western Union form on the newspaper's paper, his words typed on it in ink.")
+			("Ride With Me", "At camp, stand by one of the gang and hold Ride With Me. Charles, Sadie, John, Lenny and most riders say yes; the rest never ride."),
+			("Three at most", "Up to three ride with you, and the men you recruit count. On foot, hold Send Home by one of them and he heads home."),
+			("On the road", "They mount and get down when you do, and catch up if left behind. They take on the man you shoot at and join any fight near you."),
+			("Hurt", "Below 30% health a man pulls out and is laid up for a game day. Ask or send for him before then and he tells you he's still healing."),
+			("Home again", "Ride back to camp and the gang goes home. Come across one of them out in the world - he has work for you - and they all head back.")
 		},
 		Right = new(string, string)[5]
 		{
-			("The X-ray", "Mounted guns show on it, and it keeps 2000 people and 2000 animals. A brain, heart or spine shot drops an animal where it stands."),
-			("Funerals and Rhodes", "The mourners walk in from out of sight to a marker on the grave. In chapter 3, while the story has your guns, the mod leaves Rhodes alone."),
-			("Camps", "A camp holds while its boss is out, and town camps stay on the street. A camp spot you place is always used, even near another."),
-			("New settings", "On target name cards show a name only on whoever you aim at. TownsfolkReactions (Alt+F11, People) leaves townsfolk to the game."),
-			("Fixes", "A wounded enemy no longer keeps you in combat, and a Klansman costs no honor. After a crash, send lastcrash.txt with your logs.")
+			("Recruits", "Spare a man - he gives up, you let him go after questioning, or his nerve breaks - and he may offer to ride with you for good."),
+			("His offer", "He stops and waits a minute - get close and hold Ride With Me. Cowards and drifters offer most, proud men hardly ever, leaders never."),
+			("His old gang", "He leaves their ranks and they hear he turned. If three already ride with you, he goes his way and waits till you send for him."),
+			("Your Men", "F11, Hierarchy, then Q / E (pad: LB / RB) past Unaffiliated. Send For Him, Send Home, or Let Him Go - press it twice; it's for good."),
+			("Settings", "[Companions] and [Recruits] Enabled switch them off. MaxKept (6) caps the men you keep, ChancePercent (100) scales their odds.")
 		}
 	};
 

@@ -9,17 +9,35 @@
 
 enRAGE is a nemesis system for Red Dead Redemption 2 Story Mode. This repository is buildable
 C# source for **enRAGE 0.9.5.3**, recovered from its `NemesisMod.dll` so that it can be patched
-and extended. Clone it, build it, and you get the same `scripts/` files the official download
-installs. No game files, no mod binaries and no Script Hook files are stored here.
+and extended. Build its `upstream` branch and you get the same `scripts/` files the official
+download installs; `master` adds [0.9.5.3-decomped.1](#whats-new-in-0953-decomped1). No game
+files, no mod binaries and no Script Hook files are stored here.
 
-- The build matches the official 0.9.5.3 DLL member for member, and call, field and string for
-  each method. The only exceptions are 12 small differences from a newer compiler, listed in
-  [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md).
+- The reconstruction (the `upstream` branch) matches the official 0.9.5.3 DLL member for
+  member, and call, field and string for each method. The only exceptions are 12 small
+  differences from a newer compiler, listed in [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md).
 - The mod's 86k-line main class is split into 150 feature files, following the order its
   author's own files were compiled in. The map is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-- It has passed an in-game smoke test on an existing save. It started cleanly with
-  `errors 0`, and its menu, combat, greetings and save files all worked. The details and
-  the limits of that test are in [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md).
+- The reconstruction has passed an in-game smoke test on an existing save. It started cleanly
+  with `errors 0`, and its menu, combat, greetings and save files all worked. The details and
+  the limits of that test are in [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md). The
+  0.9.5.3-decomped.1 additions below are **not yet tested in game**.
+
+## What's new in 0.9.5.3-decomped.1
+
+`master` builds **0.9.5.3-decomped.1**: the reconstruction plus a first unofficial addition,
+men who ride with you. Build the `upstream` branch for plain 0.9.5.3. Not yet tested in game.
+
+- **Ride With Me.** The author's camp companions, which 0.9.5.3 shipped switched off, are on.
+  At camp, hold the prompt by one of the gang; up to 3 ride with you, fight, get hurt and come
+  home.
+- **Recruits.** A man you spare may offer to ride with you for good. Your men are listed on
+  the F11 menu's **Your Men** page: in Hierarchy, Q / E to the last chip, after Unaffiliated.
+- **Settings.** `[Companions] Enabled` turns Ride With Me off. `[Recruits]` has `Enabled`,
+  `MaxKept` (default 6) and `ChancePercent` (default 100).
+- **Saves.** `world.json` gains a `Recruits` list. Saves from 0.9.5.3 load unchanged.
+
+The details, the odds and the save notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Build
 
@@ -81,15 +99,23 @@ from `scripts\`. Delete `Newtonsoft.Json.dll` too, unless another mod uses it.
   `src/NemesisSystem/NemesisMod/NemesisMod.<Topic>.cs`. Read "Things that will bite" there first.
 - `make check` builds and enforces static-initializer order, which is the one way a refactor
   here can silently break startup. `make deploy` runs it first.
+- `make test` builds and runs the unit tests in `tests/NemesisMod.Tests` against the built DLL.
+  It prints failures and a tally (`FILTER=Class` picks tests, `VERBOSE=1` shows everything).
+  The tests can't call into the game, so they cover logic, settings and saves.
+  0.9.5.3-decomped.1 itself is not yet tested in game.
+- `make ci` runs `make check`, `make test` and `make invariants` (no binaries, nothing
+  identifying, UTC commit dates) and ends with `ci: OK`. Run it before every commit.
 - `make logs` follows `grudges.log` and Script Hook .NET's log. With the `.pdb` deployed,
-  exceptions in the log show file and line.
+  exceptions in the log show file and line. Companions log `COMPANION ...` lines, recruits
+  `RECRUIT ...`.
 - In game, Insert reloads scripts.
 
 **With the official DLL.** Download enRAGE from Nexus and put its `NemesisMod.dll` in `upstream/`
 (or set `UPSTREAM_DIR`). That enables:
 - `make diff-upstream`: what your edits change against the official mod, as calls, field
   accesses and strings per method;
-- `make verify`: the reconstruction gate, which passes on an untouched tree;
+- `make verify`: the reconstruction gate, which passes on an untouched tree (`upstream`;
+  on `master` it fails on the 0.9.5.3-decomped.1 changes, as expected);
 - `make decompile`: regenerates the whole tree from a DLL, with `tools/decompile.sh` and ILSpy
   (`dotnet tool install -g ilspycmd --version 9.1.0.7988`);
 - `make deploy-original`.
@@ -118,6 +144,7 @@ tools/Layout/              recovers member order and static-init dependencies fr
 tools/Splitter/            splits the main class into partial files (nemesismod.map)
 tools/AsmDiff/             compares two builds by metadata, without loading them
 tools/asmdiff-baseline.txt known differences from the official DLL
+tests/NemesisMod.Tests/    unit tests against the built DLL (make test, make ci)
 docs/                      architecture and reconstruction notes
 dist/ lib/ upstream/       build output, downloaded reference, official DLL (untracked)
 ```

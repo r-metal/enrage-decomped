@@ -25,7 +25,7 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 - [x] `WorldState.Recruits` saved in `world.json`; old saves still load (T-021). `GATE OK: T-021`, 6 tests through the mod's real `SafeFile`/`SlicedJson` paths; an old reader ignores the new key.
 - [x] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023). `GATE OK: T-023`, 52 tests. The wave review found the MaxKept cap could be overshot by two open offers; fixed with a re-check at take-on, independently verified. Not yet run in game.
 - [x] F11 "Your Men" page (T-024). It is a chip on the Hierarchy faction bar after "Unaffiliated", reached with Q/E like the other chips, not a header tab (see Decisions). `GATE OK: T-024`. The wave review found the Let Him Go confirm survived leaving the page; fixed and verified. Not yet seen in game.
-- [ ] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030)
+- [x] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030). `GATE OK: T-030`, barrier `ci: OK` 52 tests. The review caught an overclaim in the What's New text ("the other riders say yes": Uncle is 50/50, Kieran only once free); fixed.
 - [ ] **In-game acceptance test, on a cloned save slot with the enRAGE data folder snapshotted and restored afterwards (never the real save): the maintainer plays the checklist while the logs are read. Blocked: the maintainer is away from the game.**
 - [ ] **Push `master` + `upstream`, tag `v0.9.5.3-decomped.1`. Waits on the in-game test.**
 
