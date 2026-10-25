@@ -7,6 +7,7 @@ using System.Security.Permissions;
 
 [assembly: InternalsVisibleTo("rendertest")]
 [assembly: InternalsVisibleTo("EnrageTests")]
+[assembly: InternalsVisibleTo("NemesisMod.Tests")]
 [assembly: AssemblyCompany("NemesisMod")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyFileVersion("0.9.5.3")]

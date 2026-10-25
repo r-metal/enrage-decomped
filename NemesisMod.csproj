@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="lib/**;bin/**;obj/**;tools/**;build/**;dist/**;upstream/**" />
+    <Compile Remove="lib/**;bin/**;obj/**;tools/**;build/**;dist/**;upstream/**;tests/**" />
     <EmbeddedResource Include="Resources/doors.json" LogicalName="doors.json" />
   </ItemGroup>
 

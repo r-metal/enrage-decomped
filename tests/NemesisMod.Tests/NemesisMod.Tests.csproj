@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tests the real mod: the built bin/Release/net48/NemesisMod.dll (`make test` builds it
+       first). Every *.cs in this folder is compiled, so new test files need no edit here. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>NemesisMod.Tests</AssemblyName>
+    <RootNamespace>NemesisSystem.Tests</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ModDir>$(MSBuildThisFileDirectory)../../</ModDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all" />
+    <!-- the version the mod builds and ships with -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- not referenced: WinFormsShim.cs reads the Keys values out of it (the mod's build has it) -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" ExcludeAssets="all" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NemesisMod">
+      <HintPath>$(ModDir)bin/Release/net48/NemesisMod.dll</HintPath>
+    </Reference>
+    <!-- types that touch the Script Hook API load and compile; calling into the game does not work -->
+    <Reference Include="ScriptHookRDRNetAPI" Condition="Exists('$(ModDir)lib/ScriptHookRDRNetAPI.dll')">
+      <HintPath>$(ModDir)lib/ScriptHookRDRNetAPI.dll</HintPath>
+    </Reference>
+    <RuntimeHostConfigurationOption Include="NemesisMod.Tests.WinFormsRef" Value="$(PkgMicrosoft_NETFramework_ReferenceAssemblies_net48)/build/.NETFramework/v4.8/System.Windows.Forms.dll" />
+  </ItemGroup>
+</Project>

@@ -103,6 +103,8 @@ internal sealed class NemesisSettings
 
 	public string GangCamps = "";
 
+	public bool CompanionsEnabled = true;
+
 	public int WorldCatchUpMax = 24;
 
 	public bool WorldEvents = true;
@@ -1267,6 +1269,13 @@ internal sealed class NemesisSettings
 		{
 			GangCamps = v;
 		}, () => GangCamps ?? "");
+		yield return Setting.Line("");
+		yield return Setting.Line("[Companions]");
+		yield return Setting.Line("; Ride With Me: hold the prompt on a gang member at camp and he may ride out with you (up to 3). False = they stay at camp.");
+		yield return Setting.Key("Companions", "Enabled", () => CompanionsEnabled, delegate(bool v)
+		{
+			CompanionsEnabled = v;
+		}, () => $"{CompanionsEnabled}");
 		yield return Setting.Line("");
 		yield return Setting.Line("[People]");
 		yield return Setting.Line("; Everyone you dealt with (greeted, antagonized, robbed, hit...) is remembered in people.json - name, face, town, temper,");

@@ -23,17 +23,30 @@ TOOL      = dotnet tools/$(1)/bin/Release/net10.0/$(1).dll
 TOOLS    := AsmDiff Layout Splitter
 TOOL_DLLS = $(foreach t,$(TOOLS),tools/$(t)/bin/Release/net10.0/$(t).dll)
 DOTNET_Q := -nologo -v q -tl:off -clp:NoSummary
+TEST_OUT := build/test-results
+TEST_ARGS = --results-directory $(TEST_OUT) --logger "trx;LogFileName=results.trx" \
+  --logger "console;verbosity=$(if $(VERBOSE),normal,minimal)" $(if $(FILTER),--filter "FullyQualifiedName~$(FILTER)")
+# dotnet test's own chatter; `make test` shows failures and the tally (VERBOSE=1: everything)
+TEST_NOISE := ^$$|^Test run for |^VSTest version |^Starting test execution|^A total of [0-9]+ test files? matched|^Results File: |^(Passed|Failed)! +-
+
+# Builds may run under flock(1). A compiler server or MSBuild node that outlives the build
+# inherits the lock and holds it for minutes, so don't leave any behind.
+export UseSharedCompilation := false
+export MSBUILDDISABLENODEREUSE := 1
 
 # $(call need,VAR,path suffix,what it is)
 need = @[ -n "$($(1))" ] && [ -e "$($(1))$(2)" ] || { echo "$(1) is not set or has no $(2) ($(3)) - set it in config.mk (see config.mk.example)"; exit 1; }
 game_closed = @if pgrep -f 'RDR2\.exe' > /dev/null && [ -z "$(FORCE)" ]; then \
 	  echo "RDR2 is running - quit it first (or FORCE=1, then press Insert in game to reload scripts)"; exit 1; fi
 
-.PHONY: help fetch-api build check deploy deploy-original logs diff-upstream verify decompile tools clean
+.PHONY: help fetch-api build check test invariants ci deploy deploy-original logs diff-upstream verify decompile tools clean
 
 help:
 	@echo "build            compile; dist/scripts/ is what goes into <game>/scripts/"
 	@echo "check            build + static-initializer order check (run before every deploy)"
+	@echo "test             build + run tests/NemesisMod.Tests (FILTER=Class picks tests, VERBOSE=1 shows all)"
+	@echo "invariants       no binaries, nothing identifying, commit dates in UTC (tools/invariants.sh)"
+	@echo "ci               check, then test, then invariants"
 	@echo "deploy           check + copy dist/scripts/* into GAME_DIR/scripts (refuses while RDR2 runs)"
 	@echo "logs             follow the mod's grudges.log (DATA_DIR) and Script Hook .NET's log"
 	@echo "fetch-api        download ScriptHookRDRNetAPI.dll 2.2.0 into lib/ (build does this itself)"
@@ -77,6 +90,24 @@ check: build tools
 	  echo "static init reads a field before it is set (move it into the same file, after its source):"; \
 	  grep 'read before assigned' build-cctor-deps.tsv; rm build-cctor-deps.tsv; exit 1; fi
 	@rm build-cctor-deps.tsv; echo "check: static init order OK"
+
+# tests/NemesisMod.Tests runs against the built DLL. Results go to $(TEST_OUT). The last line
+# is the tally; it fails on any failed test and when no test ran.
+test: build
+	@rm -rf $(TEST_OUT); mkdir -p $(TEST_OUT)
+	@dotnet test tests/NemesisMod.Tests -c Release $(DOTNET_Q) $(TEST_ARGS) > $(TEST_OUT)/test.log 2>&1; rc=$$?; \
+	if [ -n "$(VERBOSE)" ]; then cat $(TEST_OUT)/test.log; else grep -vE '$(TEST_NOISE)' $(TEST_OUT)/test.log; fi; \
+	n=$$(grep -o '<Counters [^>]*>' $(TEST_OUT)/results.trx 2>/dev/null); \
+	p=$$(echo "$$n" | sed -n 's/.* passed="\([0-9]*\)".*/\1/p'); f=$$(echo "$$n" | sed -n 's/.* failed="\([0-9]*\)".*/\1/p'); \
+	echo "test: $${p:-0} passed, $${f:-0} failed"; [ $$rc -eq 0 ] && [ "$${f:-0}" -eq 0 ] && [ "$${p:-0}" -gt 0 ]
+
+invariants:
+	@sh tools/invariants.sh
+
+# The barrier every wave closes on.
+.NOTPARALLEL: ci
+ci: check test invariants
+	@echo "ci: OK"
 
 deploy: check
 	$(call need,GAME_DIR,/RDR2.exe,the game folder)

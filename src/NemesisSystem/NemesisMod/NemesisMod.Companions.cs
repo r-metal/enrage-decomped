@@ -261,8 +261,6 @@ public partial class NemesisMod
 
 	private int _youOffSince = -1;
 
-	internal const bool CompanionsAvailable = false;
-
 	private bool _companionsOffDone;
 
 	private static Dictionary<uint, string> _campKeyOfModel;
@@ -352,30 +350,66 @@ public partial class NemesisMod
 
 	private void UpdateCompanion(Ped player)
 	{
-		if (_companionsOffDone)
+		if (!Config.CompanionsEnabled)
 		{
+			if (_companionsOffDone)
+			{
+				return;
+			}
+			_companionsOffDone = true;
+			try
+			{
+				if (_comps.Count > 0)
+				{
+					LetCompanionsGo("riding together is off");
+				}
+			}
+			catch (Exception ex)
+			{
+				GrudgeLog("COMPANION off: send-home failed: " + ex.Message);
+			}
+			try
+			{
+				HideAskPrompt();
+			}
+			catch
+			{
+			}
+			GrudgeLog("COMPANION riding together is off (NemesisMod.ini [Companions] Enabled=false)");
 			return;
 		}
-		_companionsOffDone = true;
-		try
+		if (_companionsOffDone)
 		{
-			if (_comps.Count > 0)
+			_companionsOffDone = false;
+			GrudgeLog("COMPANION riding together is on again (NemesisMod.ini [Companions] Enabled=true)");
+		}
+		if (player.IsOnMount)
+		{
+			_youOffSince = -1;
+		}
+		else if (_youOffSince == -1)
+		{
+			_youOffSince = Game.GameTime;
+		}
+		UpdateAsk(player);
+		MissionGiverNear(player);
+		foreach (Companion item in _comps.ToList())
+		{
+			switch (item.State)
 			{
-				LetCompanionsGo("riding together is off");
+			case 0:
+				WaitToJoin(item, player);
+				break;
+			case 1:
+				Ride(item, player);
+				break;
+			case 2:
+				GoingHome(item, player);
+				break;
 			}
 		}
-		catch (Exception ex)
-		{
-			GrudgeLog("COMPANION off: send-home failed: " + ex.Message);
-		}
-		try
-		{
-			HideAskPrompt();
-		}
-		catch
-		{
-		}
-		GrudgeLog("COMPANION riding together is off in this build (Companion.cs CompanionsAvailable)");
+		Banter(player);
+		MaskFollow(player);
 	}
 
 	private static Dictionary<uint, string> CampKeyOfModel

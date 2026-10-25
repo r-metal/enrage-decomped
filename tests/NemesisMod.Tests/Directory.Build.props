@@ -1,0 +1,7 @@
+<Project>
+  <!-- obj/ and bin/ go under build/tests/ (ignored), not into tests/ -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../../build/tests/obj/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)../../build/tests/bin/</BaseOutputPath>
+  </PropertyGroup>
+</Project>
