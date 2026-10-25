@@ -703,7 +703,7 @@ public partial class NemesisMod
 
 	private bool Interrogable(Ped p, Ped player, float range)
 	{
-		if (p == null || !p.Exists() || p.IsPlayer || !p.IsHuman || DeadNow(p))
+		if (p == null || !p.Exists() || p.IsPlayer || !p.IsHuman || DeadNow(p) || IsCompanion(p.Handle))
 		{
 			return false;
 		}

@@ -590,7 +590,7 @@ public partial class NemesisMod
 
 	private bool OffStage(NemesisRecord r)
 	{
-		if (r != null && r.IsAlive && !r.PresumedDead && r != ActiveRecord && r != _sightingRec && !_worldNemeses.ContainsValue(r) && !_townMen.Any((TownMan t) => t.Rec == r))
+		if (r != null && r.IsAlive && !r.PresumedDead && r != ActiveRecord && r != _sightingRec && !_worldNemeses.ContainsValue(r) && !_townMen.Any((TownMan t) => t.Rec == r) && !_recruitOffers.Any((RecruitOffer o) => o.Rec == r))
 		{
 			return !_liveCamps.Values.Any((LiveCamp c) => c.Boss == r);
 		}

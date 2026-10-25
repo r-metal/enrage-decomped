@@ -282,6 +282,8 @@ public partial class NemesisMod
 
 	private bool _threatNear;
 
+	private int _threatSeenAt = -100000;
+
 	internal bool IsCompanionReal(int h)
 	{
 		return _comps.Any((Companion c) => c.IsReal && c.Ped != null && c.Ped.Exists() && c.Ped.Handle == h);
@@ -1111,12 +1113,22 @@ public partial class NemesisMod
 		if (Game.GameTime >= _threatScanAt)
 		{
 			_threatScanAt = Game.GameTime + 800;
-			_threatNear = player.IsInCombat || PedsAround(player).Any((Ped p) => p != null && p.Exists() && !p.IsDead && p.IsHuman && !IsOurs(p.Handle) && p.Position.DistanceTo(player.Position) < 100f && PED.IS_PED_IN_COMBAT(p.Handle, player.Handle));
+			if (PedsAround(player).Any((Ped p) => p != null && p.Exists() && !p.IsDead && FightingUs(p.Handle, player) && FightableMan(p) && (p.Position.DistanceTo(player.Position) < 100f || _comps.Any((Companion o) => o.State == 1 && o.Ped != null && o.Ped.Exists() && p.Position.DistanceTo(o.Ped.Position) < 100f))))
+			{
+				_threatSeenAt = Game.GameTime;
+			}
+			_threatNear = Game.GameTime - _threatSeenAt < 6000;
+		}
+		if (c.LastTarget != 0 && ENTITY.DOES_ENTITY_EXIST(c.LastTarget) && !ENTITY.IS_ENTITY_DEAD(c.LastTarget) && !FightableMan(new Ped(c.LastTarget)))
+		{
+			CompanionsLeaveBe(c.LastTarget);
 		}
 		int num = 0;
-		if (GunMelee.PlayerFiredRecently && PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, &num) && num != 0 && num != c.LastTarget && ENTITY.IS_ENTITY_A_PED(num) && !ENTITY.IS_ENTITY_DEAD(num) && !IsOurs(num) && PED.IS_PED_HUMAN(num) && (!ENTITY.IS_ENTITY_A_MISSION_ENTITY(num) || BelongsToUs(num)) && !GameNamed(Models.Name(ENTITY.GET_ENTITY_MODEL(num))))
+		if (GunMelee.PlayerFiredRecently && PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, &num) && num != 0 && num != c.LastTarget && ENTITY.IS_ENTITY_A_PED(num) && !ENTITY.IS_ENTITY_DEAD(num) && FightableMan(new Ped(num)) && (!IsOurs(num) || FightingUs(num, player)) && (!ENTITY.IS_ENTITY_A_MISSION_ENTITY(num) || BelongsToUs(num)) && !GameNamed(Models.Name(ENTITY.GET_ENTITY_MODEL(num))))
 		{
 			c.LastTarget = num;
+			c.WasFighting = true;
+			_threatSeenAt = Game.GameTime;
 			TASK.TASK_COMBAT_PED(ped.Handle, num, 0, 16);
 			GrudgeLog($"COMPANION {c.Name}: takes your target (ped {num})");
 		}
@@ -1132,8 +1144,57 @@ public partial class NemesisMod
 		}
 		else if (!_threatNear)
 		{
+			if (c.WasFighting && PED.IS_PED_IN_COMBAT(ped.Handle, 0))
+			{
+				TASK.CLEAR_PED_TASKS(ped.Handle, p1: true, p2: false);
+				GrudgeLog("COMPANION " + c.Name + ": no man left to fight - he stands down");
+			}
 			c.WasFighting = false;
 			c.LastTarget = 0;
+		}
+	}
+
+	private bool FightableMan(Ped p)
+	{
+		if (p == null || !p.Exists() || p.IsDead || !p.IsHuman || p.IsPlayer || p.IsHogtied || IsCompanion(p.Handle))
+		{
+			return false;
+		}
+		int h = p.Handle;
+		if (TASK.IS_PED_IN_WRITHE(h) || (ENTITY.IS_ENTITY_ATTACHED(h) && !PED.IS_PED_ON_MOUNT(h) && !PED.IS_PED_IN_ANY_VEHICLE(h, atGetIn: false)) || _sparedBound.ContainsKey(h) || (_interro?.Ped != null && _interro.Ped.Handle == h) || _recruitOffers.Any((RecruitOffer o) => o.Ped == h))
+		{
+			return false;
+		}
+		if (_fighters.TryGetValue(h, out var value) && !value.Done && value.State == "surrendered")
+		{
+			return false;
+		}
+		if (_surrenderGroup != 0 && (uint)PED.GET_PED_RELATIONSHIP_GROUP_HASH(h) == (uint)_surrenderGroup)
+		{
+			return FightingUs(h, Game.Player.Character);
+		}
+		return true;
+	}
+
+	private bool FightingUs(int h, Ped player)
+	{
+		if (!PED.IS_PED_IN_COMBAT(h, player.Handle))
+		{
+			return _comps.Any((Companion o) => o.State == 1 && o.Ped != null && o.Ped.Exists() && PED.IS_PED_IN_COMBAT(h, o.Ped.Handle));
+		}
+		return true;
+	}
+
+	internal void CompanionsLeaveBe(int h)
+	{
+		foreach (Companion comp in _comps)
+		{
+			if (comp.LastTarget == h && comp.Ped != null && comp.Ped.Exists())
+			{
+				comp.LastTarget = 0;
+				TASK.CLEAR_PED_TASKS(comp.Ped.Handle, p1: true, p2: false);
+				GrudgeLog("COMPANION " + comp.Name + ": leaves ped " + h + " be - he's out of the fight");
+			}
 		}
 	}
 

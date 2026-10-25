@@ -322,7 +322,7 @@ public partial class NemesisMod
 				text += $", tie {tie.Strength}";
 			}
 			Remember(item, "Grief", Math.Max(40, Math.Min(95, 60 + (tie?.Strength ?? 50) / 3)), "you killed his " + item2 + ", " + dead.Name);
-			if (Mind.F(item, "Anger") >= 45 || item.Personality == Personality.Loyal)
+			if (Mind.F(item, "Anger") >= Mind.AvengeLine(item, 45) || item.Personality == Personality.Loyal)
 			{
 				Mind.SetGoal(item, new Goal
 				{

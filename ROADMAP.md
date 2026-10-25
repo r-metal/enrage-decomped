@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
+Last updated: 2026-10-25 (0.9.5.3-decomped.1 tested in game; releasing)
 
 ## Status
 
@@ -26,8 +26,9 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 - [x] Recruit flow: spare a man, he offers, "Ride With Me", he leaves his gang and joins your men; send for him or send him home (T-023). `GATE OK: T-023`, 52 tests. The wave review found the MaxKept cap could be overshot by two open offers; fixed with a re-check at take-on, independently verified. Not yet run in game.
 - [x] F11 "Your Men" page (T-024). It is a chip on the Hierarchy faction bar after "Unaffiliated", reached with Q/E like the other chips, not a header tab (see Decisions). `GATE OK: T-024`. The wave review found the Let Him Go confirm survived leaving the page; fixed and verified. Not yet seen in game.
 - [x] What's New page, CHANGELOG, README and ARCHITECTURE updated (T-030). `GATE OK: T-030`, barrier `ci: OK` 52 tests. The review caught an overclaim in the What's New text ("the other riders say yes": Uncle is 50/50, Kieran only once free); fixed.
-- [ ] **In-game acceptance test, on a cloned save slot with the enRAGE data folder snapshotted and restored afterwards (never the real save): the maintainer plays the checklist while the logs are read. Blocked: the maintainer is away from the game.**
-- [ ] **Push `master` + `upstream`, tag `v0.9.5.3-decomped.1`. Waits on the in-game test.**
+- [x] In-game acceptance test, 2026-10-25, on a copied save slot with the profile and enRAGE folders snapshotted and restored afterwards (verified byte-identical). Passed: spare → roll → offer (questioning path), Recruit Now, Send For Him, Send Home, Let Him Go, riding, fighting, laid up, recruits kept across a mod reload and a game save/load. The test found 6 bugs, all fixed and reviewed (CHANGELOG § Fixed during the in-game test). The code-review fixes made after the test (mounted, surrendered and tied men in companion fights, the tied-offer cap, offers ending at mission start) are not re-tested in game yet.
+- [ ] Camp companions ("Ride With Me" at a gang camp) in game: not exercised, because the gang was away on a story mission. Test next time the gang is at camp.
+- [x] Pushed `master` + `upstream`, tagged `v0.9.5.3-decomped.1` (2026-10-25)
 
 **Ideas, not scheduled.** Each is a pure refactor you can check with `make verify`:
 - split `RosterMenu.cs` (4.8k lines) the same way;
@@ -36,6 +37,8 @@ Last updated: 2026-10-25 (0.9.5.3-decomped.1 planned)
 - rename ILSpy's locals (`num4`, `text2`) in the files you work in.
 
 ## Decisions and deviations
+
+- D-001 was amended after the in-game test: the offer waits while he's tied, no prompt during missions, companion threats are people only, debug Recruit Now, and cowards are slower to swear revenge. See D-001 § Amendments.
 
 - D-001 (2026-10-25): companions and recruits design, version scheme. `docs/decisions/D-001-companions-and-recruits.md`.
 - "Your Men" (T-024) sits on the Hierarchy faction bar (Q/E, like Unaffiliated) rather than as a header tab. A header tab would mean changing the Tab-key cycle, which the task forbade, and touching `MenuTab.cs`/`NemesisMod.Input.cs`. Revisit if the in-game test finds it hard to discover.

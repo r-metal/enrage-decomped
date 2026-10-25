@@ -59,6 +59,15 @@ public static class Mind
 		return false;
 	}
 
+	internal static int AvengeLine(NemesisRecord r, int usual)
+	{
+		if (r?.Personality == Personality.Coward)
+		{
+			return Clamp(usual + 25);
+		}
+		return usual;
+	}
+
 	private static int Clamp(int v, int lo = 0, int hi = 100)
 	{
 		return Math.Max(lo, Math.Min(hi, v));
@@ -298,7 +307,7 @@ public static class Mind
 		int num = ((r.BornYear > 0) ? (NemesisMod.GameYear() - r.BornYear) : 30);
 		Gang gang = Gangs.Of(r);
 		int num2 = gang?.Tiers[0].MinRank ?? 5;
-		if ((r.TimesKilledPlayer > 0 || r.HateTier == HateTier.Murderous) && F(r, "Anger") >= 55 && r.Gang != "army")
+		if ((r.TimesKilledPlayer > 0 || r.HateTier == HateTier.Murderous) && F(r, "Anger") >= AvengeLine(r, 55) && r.Gang != "army")
 		{
 			list.Add(new Goal
 			{
@@ -453,7 +462,7 @@ public static class Mind
 			case "Anger":
 			case "Shame":
 			case "Grief":
-				if (F(r, "Anger") >= 50 && !HasAgainstYou(r, "Avenge") && r.Gang != "army")
+				if (F(r, "Anger") >= AvengeLine(r, 50) && !HasAgainstYou(r, "Avenge") && r.Gang != "army")
 				{
 					SetGoal(r, new Goal
 					{

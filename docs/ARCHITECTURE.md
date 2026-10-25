@@ -165,7 +165,7 @@ load, but calls into the game don't work. So the tests cover pure logic (`Recrui
 - `make ci` runs `make check`, `make test` and `make invariants` (`tools/invariants.sh`: no
   binaries, nothing identifying, UTC commit dates) and ends with `ci: OK`. It is the gate for
   every change. `make verify` passes only on the untouched reconstruction (`upstream`).
-- Nothing here runs the game. 0.9.5.3-decomped.1 is not yet tested in game.
+- Nothing here runs the game. 0.9.5.3-decomped.1 was tested in game on 2026-10-25, except camp companions at a gang camp (CHANGELOG.md).
 
 ## Things that will bite
 

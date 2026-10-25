@@ -80,3 +80,21 @@ Status: locked 2026-10-25. Changing anything here is a new decision, not an impl
 - Your own gang: hiring, holding camps, wars on your side.
 - Recruits fighting in the mod's wars, or being hunted by their old gang.
 - A "Talk" prompt for companions. `HideTalkPrompt` stays; no new talk feature.
+
+## Amendments after the in-game test (2026-10-25)
+
+All of these were asked for, or approved, by the maintainer during the test.
+
+- **The offer window waits while he is tied.** It starts when he is free, capped at 10 minutes.
+  While an offer is open, his `Leaving` entry is held (his kin's and friend's too), and
+  `OffStage` treats him as on stage.
+- **No recruit prompt during story missions.** Open offers end when a mission starts.
+- **Companion threats are people only.** A threat is a human within 100 m of you or of a
+  riding companion who is not a companion, not carried (riders and wagon passengers still count), is in combat with the player or with a riding companion, and is not tied, writhing,
+  spared, surrendered, being questioned, or offering. Companions stand down 6 s after the last
+  threat. "Take your target" accepts the mod's own men only while they are fighting you or a
+  companion, and a companion drops his target as soon as the man stops being fightable.
+- **Debug "Recruit Now"** on the F11 card, with `[Debug] Enabled` and the overlay on, for men
+  who are off stage and below rank 5.
+- **Cowards are slower to swear revenge:** +25 anger (`Mind.AvengeLine`). This is a deliberate
+  change to the original enRAGE, asked for by the maintainer.

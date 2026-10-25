@@ -21,12 +21,15 @@ files, no mod binaries and no Script Hook files are stored here.
 - The reconstruction has passed an in-game smoke test on an existing save. It started cleanly
   with `errors 0`, and its menu, combat, greetings and save files all worked. The details and
   the limits of that test are in [docs/RECONSTRUCTION.md](docs/RECONSTRUCTION.md). The
-  0.9.5.3-decomped.1 additions below are **not yet tested in game**.
+  0.9.5.3-decomped.1 additions below were tested in game on 2026-10-25. The exception is
+  camp companions at a gang camp; see [CHANGELOG.md](CHANGELOG.md).
 
 ## What's new in 0.9.5.3-decomped.1
 
+![The What's New page in game](docs/screenshots/whats-new.png)
+
 `master` builds **0.9.5.3-decomped.1**: the reconstruction plus a first unofficial addition,
-men who ride with you. Build the `upstream` branch for plain 0.9.5.3. Not yet tested in game.
+men who ride with you. Build the `upstream` branch for plain 0.9.5.3. Recruits were tested in game; camp companions at a gang camp were not yet.
 
 - **Ride With Me.** The author's camp companions, which 0.9.5.3 shipped switched off, are on.
   At camp, hold the prompt by one of the gang; up to 3 ride with you, fight, get hurt and come
@@ -102,7 +105,7 @@ from `scripts\`. Delete `Newtonsoft.Json.dll` too, unless another mod uses it.
 - `make test` builds and runs the unit tests in `tests/NemesisMod.Tests` against the built DLL.
   It prints failures and a tally (`FILTER=Class` picks tests, `VERBOSE=1` shows everything).
   The tests can't call into the game, so they cover logic, settings and saves.
-  0.9.5.3-decomped.1 itself is not yet tested in game.
+  For behaviour, read `grudges.log`: every `COMPANION` and `RECRUIT` step is logged.
 - `make ci` runs `make check`, `make test` and `make invariants` (no binaries, nothing
   identifying, UTC commit dates) and ends with `ci: OK`. Run it before every commit.
 - `make logs` follows `grudges.log` and Script Hook .NET's log. With the `.pdb` deployed,

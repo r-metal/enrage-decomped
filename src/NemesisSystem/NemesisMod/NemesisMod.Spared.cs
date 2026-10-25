@@ -155,6 +155,11 @@ public partial class NemesisMod
 			GrudgeLog("HOLDINGS keeper left failed: " + ex.Message);
 		}
 		NoteMercy(Gangs.Of(r), r.Name, r.Id);
+		Ped ped = RecruitPedOf(r);
+		if (ped != null)
+		{
+			CompanionsLeaveBe(ped.Handle);
+		}
 		OfferRecruit(r, how);
 		string why;
 		int num = SpareLeaveChance(r, out why);
@@ -214,6 +219,10 @@ public partial class NemesisMod
 		_nextLeavingCheck = Game.GameTime + 2000;
 		foreach (Leaving lv in _leaving.ToList())
 		{
+			if (_recruitOffers.Any((RecruitOffer o) => o.Rec == lv.Who || o.Rec == lv.Kin || o.Rec == lv.Friend))
+			{
+				continue;
+			}
 			int num = (from kv in _worldNemeses
 				where kv.Value == lv.Who
 				select kv.Key).FirstOrDefault();

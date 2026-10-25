@@ -2251,6 +2251,10 @@ internal sealed class RosterMenu
 		case "X-Rays":
 			_mod.OpenXRays(_detail);
 			break;
+		case "Recruit Now":
+			_mod.RecruitNow(_detail);
+			_detail = null;
+			break;
 		case "Forget Him":
 		case "Forget Her":
 			if (!_confirmForget)
@@ -2292,6 +2296,10 @@ internal sealed class RosterMenu
 		if (_mod.XRayShotsOn(_detail) > 0)
 		{
 			list.Add("X-Rays");
+		}
+		if (_mod.DebugOn && _mod.CanRecruitNow(_detail))
+		{
+			list.Add("Recruit Now");
 		}
 		if (_mod.DebugOn)
 		{

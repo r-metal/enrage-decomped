@@ -120,6 +120,10 @@ public partial class NemesisMod
 			{
 				LetCompanionsGo("a mission");
 			});
+			Guard("recruit offers end", delegate
+			{
+				EndRecruitOffers("a mission started");
+			});
 			Guard("hideout doors", delegate
 			{
 				RelockAllHideouts(missionStart: true);

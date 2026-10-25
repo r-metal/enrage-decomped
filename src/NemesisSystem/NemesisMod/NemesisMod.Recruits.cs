@@ -46,6 +46,10 @@ public partial class NemesisMod
 
 		public bool Shown;
 
+		public bool Tied;
+
+		public int Started;
+
 		public int NextOrder;
 	}
 
@@ -156,6 +160,7 @@ public partial class NemesisMod
 				Rec = r,
 				How = how,
 				Until = Game.GameTime + 60000,
+				Started = Game.GameTime,
 				Ped = ped.Handle,
 				Model = ENTITY.GET_ENTITY_MODEL(ped.Handle)
 			});
@@ -246,10 +251,24 @@ public partial class NemesisMod
 			foreach (RecruitOffer item2 in _recruitOffers.ToList())
 			{
 				Ped ped = OfferPed(item2);
+				bool flag = ped != null && ped.Exists() && !ped.IsDead && (ped.IsHogtied || _sparedBound.ContainsKey(ped.Handle));
+				if (flag && Game.GameTime - item2.Started < 600000)
+				{
+					item2.Until = Math.Max(item2.Until, Game.GameTime + 60000);
+				}
 				string text = ((!Roster.Contains(item2.Rec) || !item2.Rec.IsAlive || item2.Rec.PresumedDead) ? "he's no longer on the roster" : ((ped == null || !ped.Exists() || ped.IsDead) ? "he's gone or down" : ((Game.GameTime >= item2.Until) ? "expired - you never took him up on it" : ((ped.Position.DistanceTo(player.Position) > 150f) ? "you rode on" : ((item2.Held && PED.IS_PED_IN_COMBAT(ped.Handle, player.Handle)) ? "he went for you" : null)))));
 				if (text != null)
 				{
 					EndOffer(item2, player, text, ped);
+					continue;
+				}
+				if (flag)
+				{
+					if (!item2.Tied)
+					{
+						item2.Tied = true;
+						GrudgeLog("RECRUIT " + item2.Rec.Name + ": still tied - the offer waits till you cut him free");
+					}
 					continue;
 				}
 				HoldForOffer(item2, ped, player);
@@ -263,7 +282,7 @@ public partial class NemesisMod
 		}
 		RecruitOffer recruitAt = _recruitAt;
 		Ped ped2 = ((recruitAt != null && _recruitOffers.Contains(recruitAt)) ? OfferPed(recruitAt) : null);
-		if (ped2 == null || !ped2.Exists() || ped2.Position.DistanceTo(player.Position) > 3.5f || _menu.IsOpen || _convo != null || _tg != null || player.IsInCombat || _pAsk != 0)
+		if (ped2 == null || !ped2.Exists() || ped2.Position.DistanceTo(player.Position) > 3.5f || MISC.GET_MISSION_FLAG() || _menu.IsOpen || _convo != null || _tg != null || player.IsInCombat || _pAsk != 0)
 		{
 			HideRecruitPrompt();
 			return;
@@ -314,7 +333,7 @@ public partial class NemesisMod
 			StandAndWait(o, ped, player);
 			GrudgeLog($"RECRUIT {o.Rec.Name}: stops and waits on you ({num:0} m) - hold 'Ride With Me' by him to take him on");
 		}
-		else if (Game.GameTime >= o.NextOrder && (PED.IS_PED_FLEEING(ped.Handle) || TASK.IS_PED_RUNNING(ped.Handle)))
+		else if (Game.GameTime >= o.NextOrder && (PED.IS_PED_FLEEING(ped.Handle) || TASK.IS_PED_RUNNING(ped.Handle) || _walkOffs.ContainsKey(ped.Handle) || _runners.ContainsKey(ped.Handle)))
 		{
 			StandAndWait(o, ped, player);
 		}
@@ -331,6 +350,9 @@ public partial class NemesisMod
 		int handle = ped.Handle;
 		o.NextOrder = Game.GameTime + 2500;
 		_runners.Remove(handle);
+		_walkOffs.Remove(handle);
+		_letGoRunners.Remove(handle);
+		CompanionsLeaveBe(handle);
 		if (_surrenderGroup == 0)
 		{
 			_surrenderGroup = World.AddRelationshipGroup("NEMESIS_SURRENDERED");
@@ -374,7 +396,6 @@ public partial class NemesisMod
 			return;
 		}
 		int handle = ped.Handle;
-		Gang gang = Gangs.Of(rec);
 		if (rec == ActiveRecord)
 		{
 			if (!_encEnd.HasValue)
@@ -386,35 +407,7 @@ public partial class NemesisMod
 			GrudgeLog("RECRUIT " + rec.Name + ": he was the man you were up against - the encounter is over");
 		}
 		LeaveOldScenes(handle);
-		_leaving.RemoveAll((Leaving l) => l.Who == rec);
-		long now = GameMinutesNow();
-		List<NemesisRecord> list = Roster.Where((NemesisRecord x) => x != rec && Mind.TieTo(x, rec.Id) != null).ToList();
-		bool female = Models.Female(rec.ModelHash);
-		WorldEvent worldEvent = NewEvent("LIFE", now);
-		worldEvent.Gangs.Add(rec.Gang ?? "");
-		worldEvent.Title = rec.Name + " turned - rides with Arthur Morgan now";
-		worldEvent.Lines.Add(Pron.Her((gang != null) ? ("You let him live. He left the " + gang.Name + " to ride with you.") : "You let him live. He rides with you now.", female));
-		worldEvent.People.Add(new WorldPart
-		{
-			Id = rec.Id,
-			Name = rec.Name,
-			Gang = rec.Gang,
-			Outcome = "LEFT",
-			Note = "rides with you now"
-		});
-		worldEvent.Heard = true;
-		Chronicle.Events.Add(worldEvent);
-		foreach (NemesisRecord item2 in list)
-		{
-			AddThought(item2, "Bitter", rec.Name + " went over to Arthur Morgan", -2, 48, now);
-		}
-		RemoveRecord(rec, "turned - rides with you");
-		(Chronicle.Recruits ?? (Chronicle.Recruits = new List<NemesisRecord>())).Add(rec);
-		SaveWorld();
-		SaveRoster();
-		Feed("SPARED " + rec.Name + ((gang != null) ? (" turned on the " + gang.Name) : " turned") + " - he rides with you now", Theme.Good, rec);
-		GrudgeLog(string.Format("RECRUIT {0} ({1}): you took him on - off the roster, {2} kept now; {3} of his people think less of him", rec.Name, o.How, Chronicle.Recruits.Count, list.Count));
-		GrudgeNotice(Pron.Her("Word is " + rec.FullName + ((gang != null) ? (" turned on the " + gang.Name) : " turned") + " - he rides with you now.", female));
+		TakeOn(rec, o.How);
 		int num = _comps.Count((Companion c) => c.State != 2);
 		if (!Config.CompanionsEnabled || num >= 3)
 		{
@@ -451,6 +444,72 @@ public partial class NemesisMod
 		_comps.Add(companion);
 		Setup(companion, ped, player);
 		GrudgeLog($"RECRUIT {rec.Name}: rides with you ({num + 1} riding)");
+	}
+
+	private void TakeOn(NemesisRecord rec, string how)
+	{
+		Gang gang = Gangs.Of(rec);
+		_leaving.RemoveAll((Leaving l) => l.Who == rec);
+		long now = GameMinutesNow();
+		List<NemesisRecord> list = Roster.Where((NemesisRecord x) => x != rec && Mind.TieTo(x, rec.Id) != null).ToList();
+		bool female = Models.Female(rec.ModelHash);
+		WorldEvent worldEvent = NewEvent("LIFE", now);
+		worldEvent.Gangs.Add(rec.Gang ?? "");
+		worldEvent.Title = rec.Name + " turned - rides with Arthur Morgan now";
+		worldEvent.Lines.Add(Pron.Her((gang != null) ? ("You let him live. He left the " + gang.Name + " to ride with you.") : "You let him live. He rides with you now.", female));
+		worldEvent.People.Add(new WorldPart
+		{
+			Id = rec.Id,
+			Name = rec.Name,
+			Gang = rec.Gang,
+			Outcome = "LEFT",
+			Note = "rides with you now"
+		});
+		worldEvent.Heard = true;
+		Chronicle.Events.Add(worldEvent);
+		foreach (NemesisRecord item2 in list)
+		{
+			AddThought(item2, "Bitter", rec.Name + " went over to Arthur Morgan", -2, 48, now);
+		}
+		RemoveRecord(rec, "turned - rides with you");
+		(Chronicle.Recruits ?? (Chronicle.Recruits = new List<NemesisRecord>())).Add(rec);
+		SaveWorld();
+		SaveRoster();
+		Feed("SPARED " + rec.Name + ((gang != null) ? (" turned on the " + gang.Name) : " turned") + " - he rides with you now", Theme.Good, rec);
+		GrudgeLog(string.Format("RECRUIT {0} ({1}): you took him on - off the roster, {2} kept now; {3} of his people think less of him", rec.Name, how, Chronicle.Recruits.Count, list.Count));
+		GrudgeNotice(Pron.Her("Word is " + rec.FullName + ((gang != null) ? (" turned on the " + gang.Name) : " turned") + " - he rides with you now.", female));
+	}
+
+	internal bool CanRecruitNow(NemesisRecord r)
+	{
+		if (r == null || !Roster.Contains(r) || r.Rank >= 5 || !OffStage(r) || _interro?.Rec == r)
+		{
+			return false;
+		}
+		string text = r.Id ?? "";
+		if (!text.StartsWith("lore_") && !text.StartsWith("fallen_") && !text.StartsWith("vdl_"))
+		{
+			return !(Gangs.Of(r)?.StoryOnly ?? false);
+		}
+		return false;
+	}
+
+	internal void RecruitNow(NemesisRecord r)
+	{
+		if (!CanRecruitNow(r))
+		{
+			GrudgeLog("RECRUIT debug Recruit Now refused for " + (r?.Name ?? "nobody") + " - off the roster, out in the world, or a story man");
+			return;
+		}
+		int num = Chronicle.Recruits?.Count ?? 0;
+		if (num >= Config.RecruitsMaxKept)
+		{
+			ShowNotification($"You keep {num} men already ([Recruits] MaxKept {Config.RecruitsMaxKept}).");
+			GrudgeLog($"RECRUIT debug Recruit Now refused for {r.Name} - {num} kept already");
+			return;
+		}
+		TakeOn(r, "debug: Recruit Now");
+		ShowNotification(r.Name + " rides for you now. Send for him from Your Men.");
 	}
 
 	private void LeaveOldScenes(int h)
@@ -694,6 +753,16 @@ public partial class NemesisMod
 			_pRecruit = 0;
 			_pRecruitFor = 0;
 		}
+	}
+
+	private void EndRecruitOffers(string why)
+	{
+		Ped character = Game.Player.Character;
+		foreach (RecruitOffer item in _recruitOffers.ToList())
+		{
+			EndOffer(item, character, why, OfferPed(item));
+		}
+		HideRecruitPrompt();
 	}
 
 	private void WipeRecruitOffers()

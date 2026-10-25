@@ -6,8 +6,14 @@ their problems here, not to the enRAGE author.
 
 ## 0.9.5.3-decomped.1 - unreleased
 
-Built on the 0.9.5.3 reconstruction (the `upstream` branch). **Not yet tested in game**: the
-unit tests and `make ci` pass, and the in-game acceptance test comes before the tag. The design
+Built on the 0.9.5.3 reconstruction (the `upstream` branch). **Tested in game on 2026-10-25**,
+on a copied save with the enRAGE folder restored afterwards. Recruiting by sparing (questioning
+path), Recruit Now, Send For Him, Send Home, Let Him Go, riding, fighting, laid up, and keeping
+recruits across a mod reload and a game save and load all worked. Camp companions at a gang
+camp are not yet tested in game, because the gang was away on a story mission. A code review after
+the test tightened the companion-fight and offer rules: mounted, surrendered and tied men, a
+10-minute cap on a tied man's offer, and offers ending when a mission starts. Those changes
+were not re-tested in game. The design
 is in [docs/decisions/D-001-companions-and-recruits.md](docs/decisions/D-001-companions-and-recruits.md).
 
 ### Added
@@ -48,8 +54,30 @@ is in [docs/decisions/D-001-companions-and-recruits.md](docs/decisions/D-001-com
   - **Send Home**: he leaves, and stays one of your men;
   - **Let Him Go**: he is gone for good, with a `LIFE` event. It needs a second Enter.
 - **What's New page** for this version. It shows once, the first time the new version loads.
+- **Debug: Recruit Now.** With `[Debug] Enabled` and the overlay on (Ctrl+F11), a man's F11
+  card gets **Recruit Now**: he joins Your Men at once. Send for him to have him ride with you.
+  It's for testing, and only for men who are off stage and below rank 5.
+- **Cowards swear revenge less.** A coward needs 25 more anger than other men before he swears
+  to settle it with you (`Mind.AvengeLine`). This applies where revenge is sworn on a grudge,
+  when you kill his kin or friend, and when goals are first set. It also changes the original
+  enRAGE: fewer cowards end up hunting you.
 - `grudges.log` lines for all of it: `COMPANION ...` for riding together, `RECRUIT ...` for
   offers, odds and rolls, take-ons, send-for, send-home and let-go.
+
+### Fixed during the in-game test
+
+- A spared man's offer died within a second, because the "he quits his gang" logic took him off
+  the roster at once. Now that logic waits while an offer is open, and covers his kin and friend
+  too.
+- A hogtied man you let go could never see the prompt, so his 60 seconds ran out while he was
+  tied. Now the offer waits until you cut him free, for up to 10 minutes.
+- A companion fought a horse that kicked you and never stopped: he treated any combat you were
+  in as a threat. Now only men count who are fighting you or a companion. Men who are tied,
+  spared, surrendered, being questioned or offering don't. Mounted men count. A companion drops
+  a man as soon as he gives up. He stands down 6 seconds after the last one stops.
+- A companion ignored enRAGE's own encounter men, so he dropped out of their fights.
+- Your own rider got the Interrogate prompt.
+- No recruit prompt shows during a story mission, and open offers end when one starts.
 
 ### Settings
 
